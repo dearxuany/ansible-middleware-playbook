@@ -1,0 +1,12 @@
+[Unit]
+Description=filebeat
+After=network.target
+[Service]
+Type=forking
+User=elk
+Group=elk
+ExecStart=/bin/sh /data/usr/local/filebeat/start_filebeat.sh
+Restart=always
+RestartSec=1
+[Install]
+WantedBy=multi-user.target

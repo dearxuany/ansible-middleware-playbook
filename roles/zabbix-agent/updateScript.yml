@@ -1,0 +1,16 @@
+---
+
+- hosts: opd_elk-01, opd_gitlab-01, opd_jenkins-01, prd_bi-01, prd_bnail-01, prd_bnail-02, prd_distirbution-01, prd_fcs-01, prd_im-01, prd_lighthost-01
+  vars:
+    scriptName: "system_cpu.py"
+    keyConfig: "UserParameter=cpu.info[*],/usr/bin/python /data/usr/local/zabbix/script/system_cpu.py $1"
+  tasks:
+  - name: zabbix script update
+    copy: src=files/zabbix/script/{{ scriptName }} dest=/data/usr/local/zabbix/script owner=zabbix group=zabbix mode=0775
+  - name: add key config
+    lineinfile: 
+      dest: /data/usr/local/zabbix/etc/zabbix_agentd.conf.d/key.conf
+      line: '{{ keyConfig }}'
+  - name: restart zabbix agent
+    shell: systemctl restart zabbix_agentd
+    

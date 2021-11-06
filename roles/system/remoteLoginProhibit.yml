@@ -1,0 +1,27 @@
+---
+
+- hosts:  qas_app-03
+  gather_facts: F
+  become: yes
+  become_user: dearxuany
+  tasks:
+  - name: change ssh config
+    lineinfile:
+      dest: /etc/ssh/sshd_config
+      regexp: "^PermitRootLogin"
+      line: "PermitRootLogin no"
+      state: present
+  - name: execute command
+    shell: "cat /etc/ssh/sshd_config |grep PermitRootLogin"
+    register: cmd_stdout
+  - name: show command stdout
+    debug: var=cmd_stdout verbosity=0
+  - name: restart ssh
+    shell: systemctl restart sshd
+  - name: show ssh status
+    shell: systemctl status sshd
+    register: ssh_restart_stdout
+  - name: show ssh restart status
+    debug: var=ssh_restart_stdout verbosity=0
+    
+    

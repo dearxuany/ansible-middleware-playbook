@@ -1,0 +1,5 @@
+- hosts: deploy_host
+  gather_facts: true
+  remote_user: ops
+  roles:
+    - logrotate

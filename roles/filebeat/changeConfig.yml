@@ -1,0 +1,18 @@
+---
+
+- hosts: opd_ansible-01
+  tasks:
+  - name: git pull filebeat hosts config
+    become: yes
+    become_user: dearxuany
+    shell: cd /data/app/ansible-deploy/alihn1-playbook/roles/filebeat/files/elk-filebeat-conf && git pull origin prd
+
+
+- hosts:  prd_app-03, prd_app-04
+  tasks:
+  - name: stop filebeat
+    shell: systemctl stop filebeat
+  - name: copy filebeat config
+    copy: src=/data/app/ansible-deploy/alihn1-playbook/roles/filebeat/files/elk-filebeat-conf/{{ server_names }}-filebeat.yml dest=/data/usr/local/filebeat/filebeat.yml
+  - name: Run Filebeat by ELK User
+    shell: systemctl restart filebeat

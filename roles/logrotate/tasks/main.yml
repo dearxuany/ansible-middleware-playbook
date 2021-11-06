@@ -1,0 +1,22 @@
+- name: create logroate_config dir
+  become: yes
+  become_user: dearxuany
+  file: dest=/data/etc/logrotate/  state=directory
+    
+- name: push logrotate script
+  become: yes
+  become_user: dearxuany
+  copy: src=roles/logrotate/files/logrotate dest=/data/scripts/logrotate mode=0755
+  
+- name: push logrotate config 
+  become: yes
+  become_user: dearxuany
+  template: src=log_config dest=/data/etc/logrotate/{{ project_env }}_{{ log_name }}_log
+  
+- name: add logrotate crontab task
+  become: yes
+  become_user: dearxuany
+  cron: name={{ item.name }} job={{ item.job }} minute={{ item.minute }} hour={{ item.hour }}
+  with_items:
+    - { name: 'logrotate',job: '/bin/sh /data/scripts/logrotate >/dev/null 2>&1',minute: '0',hour: '*' }
+    - { name: 'logrotate1',job: '/usr/sbin/logrotate -f /data/etc/logrotate/*log >/dev/null 2>&1',minute: '59',hour: '23' }

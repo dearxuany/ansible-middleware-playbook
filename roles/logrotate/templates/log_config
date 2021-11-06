@@ -1,0 +1,8 @@
+{{ log_path }}/{{ log_name }} {
+size 200M
+rotate 10
+dateext
+dateformat -%Y-%m-%d.%s
+notifempty
+copytruncate
+}

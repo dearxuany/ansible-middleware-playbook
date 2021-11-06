@@ -1,0 +1,26 @@
+---
+
+- hosts: prd_examsystem-01, prd_examsystem-02
+  tasks:
+  - name: Create Goal Dir
+    file: path=/data/usr/local/src state=directory mode=0755
+  - name: cp package
+    copy: src=files/pinpoint-agent-1.8.4.tar.gz dest=/data/usr/local/src/pinpoint-agent-1.8.4.tar.gz
+  - name: create pinpoint dir
+    shell: mkdir -p /data/usr/local/pinpoint-agent
+  - name: release package
+    shell: tar -zxf /data/usr/local/src/pinpoint-agent-1.8.4.tar.gz -C /data/usr/local/pinpoint-agent
+  - name: set pinpoint server config
+    lineinfile:
+      dest: /data/usr/local/pinpoint-agent/pinpoint.config
+      regexp: "^profiler.collector.ip"
+      line: "profiler.collector.ip=alihn1-opd-pinpoint-01.dearxuany"
+      state: present
+  - name: execute command
+    shell: "cat /data/usr/local/pinpoint-agent/pinpoint.config |grep profiler.collector.ip"
+    register: cmd_stdout
+  - name: show command stdout
+    debug: var=cmd_stdout verbosity=0
+  - name: chown
+    shell: chown -R dearxuany.dearxuany /data/usr/local/pinpoint-agent/
+    

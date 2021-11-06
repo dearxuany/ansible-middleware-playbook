@@ -1,0 +1,7 @@
+---
+- hosts: all
+  tasks:
+  - name: stop the second filebeat process
+    become: yes
+    become_user: dearxuany
+    shell: kill $(ps -ef|grep -v grep|grep filebeat2|awk '{print $2}')

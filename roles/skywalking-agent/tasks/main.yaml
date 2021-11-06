@@ -1,0 +1,62 @@
+- name: Create Goal Dir
+  file: path=/data/usr/local/src state=directory mode=0755
+
+- name: Download package
+  become: yes
+  become_user: dearxuany
+  get_url:
+    url: https://dearxuany.com/skywalking/skywalking-agent-7.0.0.tar.gz
+    dest: /data/usr/local/src/
+    mode: '0644'
+    url_username: pkg
+    url_password: passwd
+    
+- name: check old skywalking-agent
+  shell: ls /data/usr/local/skywalking-agent
+  ignore_errors: True
+  register: result
+  
+- name: remove old skywalking-agent if exist
+  become: yes
+  become_user: dearxuany
+  file:
+    path: /data/usr/local/skywalking-agent
+    state: absent
+  when: result|succeeded
+
+- name: release package
+  shell: tar -zxf /data/usr/local/src/skywalking-agent-7.0.0.tar.gz -C /data/usr/local/
+  become: yes
+  become_user: dearxuany
+
+- name: create log dir
+  become: yes
+  become_user: dearxuany
+  file: path=/data/var/log/skywalking-agent state=directory owner={{ service_user }} group={{ service_user }} mode=0755
+
+- name: set skywalking server config
+  become: yes
+  become_user: dearxuany
+  lineinfile:
+    dest: /data/usr/local/skywalking-agent/config/agent.config
+    #regexp: "^collector.backend_service"
+    #line: "collector.backend_service=${SW_AGENT_COLLECTOR_BACKEND_SERVICES:{{ skywalking_server }}}"
+    regexp: '{{ item.regexp }}'
+    line: '{{ item.line }}'
+    #state: present
+  with_items:
+    - { regexp: '^collector.backend_service', line: 'collector.backend_service=${SW_AGENT_COLLECTOR_BACKEND_SERVICES:{{ skywalking_server }}}'}
+    - { regexp: '^logging.file_name', line: 'logging.file_name=${SW_LOGGING_FILE_NAME:skywalking-agent.log}'}
+    - { regexp: '^logging.level', line: 'logging.level=${SW_LOGGING_LEVEL:INFO}'}
+    - { regexp: '^logging.dir', line: 'logging.dir=${SW_LOGGING_DIR:/data/var/log/skywalking-agent}'}
+    
+
+- name: execute command
+  shell: "cat /data/usr/local/skywalking-agent/config/agent.config |grep collector.backend_service"
+  register: cmd_stdout
+
+- name: show command stdout
+  debug: var=cmd_stdout verbosity=0
+
+- name: chown
+  shell: sudo chown -R {{ service_user }}.{{ service_user }} /data/usr/local/skywalking-agent

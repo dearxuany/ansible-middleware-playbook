@@ -1,0 +1,10 @@
+[Unit]
+Description=nginx - high performance web server
+After=network.target remote-fs.target nss-lookup.target
+[Service]
+Type=forking
+ExecStart=/data/usr/local/nginx/sbin/nginx -c /data/etc/nginx/nginx.conf
+ExecReload=/data/usr/local/nginx/sbin/nginx -s reload
+ExecStop=/data/usr/local/nginx/sbin/nginx -s stop
+[Install]
+WantedBy=multi-user.target

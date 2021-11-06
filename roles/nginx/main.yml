@@ -1,0 +1,48 @@
+--- 
+
+- hosts: uat_nginx-01
+  tasks:
+  - name: Open User Lock
+    become: yes
+    become_user: dearxuany
+    shell: chattr -i /etc/passwd /etc/shadow /etc/group /etc/gshadow
+  - name: Add Nginx User
+    become: yes
+    become_user: dearxuany
+    user: name=nginx state=present createhome=no shell=/usr/sbin/nologin
+  - name: shutdown user lock
+    become: yes
+    become_user: dearxuany
+    shell: chattr +i /etc/passwd /etc/shadow /etc/group /etc/gshadow
+  - name: make the nginx folders
+    file:
+        path: /data/usr/local
+        state: directory
+  - name: Copy Package
+    copy: src=files/dearxuany-nginx-1.16.0.tar.gz dest=/data/usr/local/src/dearxuany-nginx-1.16.0.tar.gz
+  - name: Tar Packeage
+    shell: cd /data/usr/local; tar -xvz -f /data/usr/local/src/dearxuany-nginx-1.16.0.tar.gz -C /data/usr/local
+  - name: Create Config Dir
+    become: yes
+    become_user: dearxuany
+    shell: mkdir -p /data/etc/nginx/conf.d
+  - name: Move Config File
+    become: yes
+    become_user: dearxuany
+    shell: cp -r /data/usr/local/nginx/conf/* /data/etc/nginx && mv /data/usr/local/nginx/conf{,.bak}
+  - name: set path
+    shell: sed -i '$a export NGINX_HOME=/data/usr/local/nginx\nexport PATH=$PATH:$NGINX_HOME/sbin' /etc/profile && source /etc/profile
+  - name: make log dir 
+    become: yes
+    become_user: dearxuany
+    file: path=/data/var/log/nginx state=directory mode=0755
+  - name: Send Unit File
+    copy: src=files/nginx.service dest=/etc/systemd/system/nginx.service
+  - name: Reload Systemd Unit File
+    shell: systemctl daemon-reload
+  - name: start nginx
+    become: yes
+    become_user: dearxuany
+    shell: systemctl start nginx.service
+  - name: start nginx with system start
+    shell: systemctl enable nginx.service && systemctl is-enabled nginx.service

@@ -1,0 +1,14 @@
+---
+
+- hosts: prd_fcs-01
+  tasks:
+  - name: rename filebeat
+    shell: mv /data/usr/local/filebeat /data/usr/local/filebeat2
+  - name: stop old filebeat
+    become: yes
+    become_user: dearxuany
+    shell: systemctl stop filebeat
+  - name: restart filebeat
+    become: yes
+    become_user: elk
+    shell: nohup /data/usr/local/filebeat2/filebeat -e -c /data/usr/local/filebeat2/filebeat.yml >> /data/var/log/filebeat/filebeat-start.log 2>&1 &

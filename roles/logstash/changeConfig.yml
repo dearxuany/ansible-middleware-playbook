@@ -1,0 +1,19 @@
+---
+
+- hosts: opd_ansible-01
+  tasks:
+  - name: git pull filebeat hosts config
+    become: yes
+    become_user: dearxuany
+    shell: cd /data/app/ansible-deploy/alihn1-playbook/roles/logstash/files/elk-logstash-conf && git pull origin prd
+
+- hosts: opd_elk-01
+  tasks:
+  - name: stop logstash
+    shell: systemctl stop logstash
+  - name: copy logstash config
+    become: yes
+    become_user: elk
+    copy: src=/data/app/ansible-deploy/alihn1-playbook/roles/logstash/files/elk-logstash-conf/{{ server_names }}-logstash.conf dest=/data/usr/local/logstash/config/conf.d/logstash.conf
+  - name: Run logstash
+    shell: systemctl start logstash

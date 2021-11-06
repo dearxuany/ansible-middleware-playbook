@@ -1,0 +1,31 @@
+---
+
+- hosts: prd_canal-01
+  become: yes
+  become_user: dearxuany
+
+  tasks:
+  - name: Create Goal Dir
+    file: path=/data/usr/local/src state=directory mode=0755
+
+  - name: Download package
+    get_url:
+      url: https://dearxuany.com/canal/canal.deployer-1.1.4.tar.gz
+      dest: /data/usr/local/src/
+      mode: '0644'
+      url_username: pkg
+      url_password: passwd
+
+  - name: create canal dir and untar canal
+    shell: mkdir /data/usr/local/canal-server && tar -xvzf /data/usr/local/src/canal.deployer-1.1.4.tar.gz -C /data/usr/local/canal-server
+
+  - name: add canal user
+    shell: chattr -i /etc/passwd /etc/shadow /etc/group /etc/gshadow && useradd canal && chattr +i /etc/passwd /etc/shadow /etc/group /etc/gshadow
+
+  - name: change canal owner
+    file: path=/data/usr/local/canal-server owner=canal group=canal recurse=yes
+
+  - name: creat canal log dir
+    file: path=/data/var/log/canal-server state=directory owner=canal group=canal mode=0755
+
+  

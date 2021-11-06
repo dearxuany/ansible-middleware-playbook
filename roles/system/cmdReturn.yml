@@ -1,0 +1,11 @@
+---
+- hosts: prd, uat, qas, opd
+  gather_facts: F
+  vars:
+    cmd: "ps -ef|grep filebeat|grep -v grep"
+  tasks:
+  - name: execute command
+    shell: "{{ cmd }}"
+    register: cmd_output
+  - name: show command stdout
+    debug: var=cmd_output verbosity=0

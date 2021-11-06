@@ -1,0 +1,32 @@
+filebeat.inputs:
+- type: log
+  enabled: true
+  paths:
+    - /data/var/log/nginx/static.indearxuany.com_access.log
+    - /data/var/log/nginx/web.indearxuany.com_access.log
+    - /data/var/log/nginx/ws.indearxuany.com_access.log
+    - /data/var/log/nginx/www.indearxuany.com_access.log
+  fields:
+    log_source: prd-nginx-02
+  tags: ["nginx","access"]
+
+- type: log
+  enabled: true
+  paths:
+    - /data/var/log/nginx/static.indearxuany.com_error.log
+    - /data/var/log/nginx/web.indearxuany.com_error.log
+    - /data/var/log/nginx/ws.indearxuany.com_error.log
+    - /data/var/log/nginx/www.indearxuany.com_error.log
+  fields:
+    log_source: prd-nginx-02
+  tags: ["nginx","error"]
+
+
+output.kafka:
+  hosts: ["192.34.111.171:9092"]
+  topic: 'prdnginx02'
+  partition.round_robin:
+    reachable_only: false
+  required_acks: 1
+  compression: gzip
+  max_message_bytes: 1000000  

@@ -1,0 +1,8 @@
+---
+
+- hosts: opd_ansible-01
+  tasks:
+  - name: git pull filebeat hosts config
+    become: yes
+    become_user: dearxuany
+    shell: cd /data/app/ansible-deploy/alihn1-playbook/roles/filebeat/files/elk-filebeat-conf && git pull origin prd
