@@ -1,0 +1,8 @@
+---
+
+- hosts: opd_es-01, opd_es-02, opd_es-03
+  tasks:
+  - name: Copy Cert
+    copy: src=/data/app/ansible-deploy/gzyw53-playbook/roles/elasticsearch/files/cert/elastic-certificates.p12 dest=/data/usr/local/elasticsearch/config/elastic-certificates.p12 backup=yes group=elk owner=elk mode=0600
+  #- name: Copy Ca Cert
+  #  copy: src=/data/usr/local/ansible/roles/elasticsearch/files/cert/elastic-stack-ca.p12 dest=/data/usr/local/elasticsearch/config/elastic-stack-ca.p12 backup=yes force=no group=elk owner=elk mode=0600

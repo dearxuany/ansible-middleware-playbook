@@ -1,0 +1,54 @@
+---
+
+- hosts: qas-k8s
+  tasks:
+  - shell: "systemctl status zabbix_agentd"
+    register: return_value
+    ignore_errors: True
+  - fail: msg="zabbix_agentd is running"
+    when: "'running' in return_value.stdout"
+  - name: Create Goal Dir
+    file: path=/data/usr/local/src state=directory mode=0755
+  - name: Copy Package
+    copy: src=/data/app/ansible-deploy/alihn1-playbook/roles/zabbix-agent/files/zabbix.tar.gz dest=/data/usr/local/src/zabbix.tar.gz
+  - name: Tar Package
+    shell: cd /data/usr/local; tar -xvz -f /data/usr/local/src/zabbix.tar.gz -C /data/usr/local
+  - name: Move Old Scripts
+    shell: rm -rf /data/usr/local/zabbix/script
+  - name: Copy Monitor Scripts
+    copy: src=/data/app/ansible-deploy/alihn1-playbook/roles/zabbix-agent/files/zabbix/script dest=/data/usr/local/zabbix
+  - name: Change mode of Scripts
+    shell: chmod +x /data/usr/local/zabbix/script/*
+  - name: Copy Zabbix Key 
+    copy: src=/data/app/ansible-deploy/alihn1-playbook/roles/zabbix-agent/files/zabbix/etc/zabbix_agentd.conf.d/key.conf dest=/data/usr/local/zabbix/etc/zabbix_agentd.conf.d/key.conf
+  - name: Copy Zabbix-agentd Startup File To Systemd
+    copy: src=/data/app/ansible-deploy/alihn1-playbook/roles/zabbix-agent/files/zabbix_agentd.service dest=/etc/systemd/system/zabbix_agentd.service
+  - name: Copy Starup Script
+    copy: src=/data/app/ansible-deploy/alihn1-playbook/roles/zabbix-agent/files/zabbix_agentd-start.sh dest=/etc/init.d/zabbix_agentd mode=0755
+  - name: Reload Zabbix-agentd Systemd Unit File 
+    shell: systemctl daemon-reload
+  - name: open user lock
+    become: yes
+    become_user: dearxuany
+    shell: chattr -i /etc/passwd /etc/shadow /etc/group /etc/gshadow
+  - name: Create Zabbix-agentd User
+    become: yes
+    become_user: dearxuany
+    user: name=zabbix state=present createhome=no shell=/bin/bash
+  - name: shutdown user lock
+    become: yes
+    become_user: dearxuany
+    shell: chattr +i /etc/passwd /etc/shadow /etc/group /etc/gshadow
+  - name: Modify Zabbix-agentd Basedir Permission
+    file: path=/data/usr/local/zabbix owner=zabbix group=zabbix recurse=yes
+  - name: Create Zabbix-agentd Log Dir
+    file: path=/data/var/log/zabbix state=directory owner=zabbix group=zabbix mode=0755
+  - name: Create Zabbix-agentd Log
+    file: path=/data/var/log/zabbix/zabbix_agentd.log state=touch owner=zabbix group=zabbix mode=0644
+  - name: Run Zabbix-agnetd With System Startup
+    shell: sudo systemctl enable zabbix_agentd.service
+  - name: Enable Zabbix-agnetd With System Startup
+    shell: sudo systemctl is-enabled zabbix_agentd.service
+  - name: Run Zabbix-agentd By zabbix User
+    shell: sudo systemctl restart zabbix_agentd.service
+

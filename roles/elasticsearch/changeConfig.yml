@@ -1,0 +1,15 @@
+---
+
+- hosts: opd_ansible-01
+  tasks:
+  - name: git pull elasticsearch hosts config
+    become: yes
+    become_user: dearxuany
+    shell: cd /data/app/ansible-deploy/alihn1-playbook/roles/elasticsearch/files/elk-elasticsearch-conf && git pull origin prd
+
+- hosts: prd_wikies-01
+  tasks:
+  - name: Copy elasticsearch config to the node
+    copy: src=files/elk-elasticsearch-conf/{{ server_names }}-config/elasticsearch.yml dest=/data/usr/local/elasticsearch/config/elasticsearch.yml backup=yes force=yes group=elk owner=elk mode=0644
+  - name: Copy jvm config to the node
+    copy: src=files/elk-elasticsearch-conf/{{ server_names }}-config/jvm.options dest=/data/usr/local/elasticsearch/config/jvm.options backup=yes force=yes group=elk owner=elk mode=0644

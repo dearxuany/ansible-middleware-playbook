@@ -1,0 +1,7 @@
+---
+- hosts: opd_elk-01
+  tasks:
+  - name: Copy Startup File To Systemd
+    copy: src=/data/app/ansible-deploy/alihn1-playbook/roles/logstash/files/logstash.service dest=/etc/systemd/system/logstash.service
+  - name: Reload Systemd Unit File
+    shell: systemctl daemon-reload

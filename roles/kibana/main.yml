@@ -1,0 +1,18 @@
+---
+
+- hosts: prd_wikies-01
+  tasks:
+  - name: Copy Package
+    copy: src=files/kibana-7.1.1-linux-x86_64.tar.gz dest=/data/usr/local/src/kibana.tar.gz
+  - name: Tar Package
+    shell: tar -xvz -f /data/usr/local/src/kibana.tar.gz -C /data/usr/local
+  - name: Rename kibana
+    shell: mv /data/usr/local/kibana-7.1.1-linux-x86_64 /data/usr/local/kibana
+  - name: Copy Kibana Startup Script
+    copy: src=files/start_kibana.sh dest=/data/usr/local/kibana/start_kibana.sh
+  - name: Modify kibana Basedir Permission
+    file: path=/data/usr/local/kibana owner=elk group=elk recurse=yes
+  - name: Create kibana Start Log Dir
+    file: path=/data/var/log/kibana state=directory owner=elk group=elk mode=0755
+  - name: Create kibana Start Log
+    file: path=/data/var/log/kibana/kibana-start.log state=touch owner=elk group=elk mode=0644

@@ -1,0 +1,13 @@
+---
+
+- hosts: opd_ansible-01
+  tasks:
+  - name: git pull hosts config
+    become: yes
+    become_user: dearxuany
+    shell: cd /data/app/ansible-deploy/alihn1-playbook/roles/kibana/files/elk-kibana-conf && git pull origin prd
+
+- hosts: prd_wikies-01
+  tasks:
+  - name: Copy kibana config to the node
+    copy: src=files/elk-kibana-conf/{{ server_names }}-kibana.yml dest=/data/usr/local/kibana/config/kibana.yml backup=yes force=yes group=elk owner=elk mode=0644
